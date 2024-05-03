@@ -11,8 +11,8 @@ class LM():
         self._train_corpus: Corpus = train_corpus
 
         self._ngrams:FreqDist = self.cal_n_grams(self._train_corpus, self._N)
-        bins:int = len(self._train_corpus.get_vocab()) ** self._N
-        self._laplace_dist:LaplaceProbDist = LaplaceProbDist(self._ngrams, bins=1e6)
+
+        self._laplace_dist:LaplaceProbDist = LaplaceProbDist(self._ngrams, bins=1e10)
         self._goodtur_dist:SimpleGoodTuringProbDist = SimpleGoodTuringProbDist(self._ngrams, bins=1e10)
     
     @classmethod
@@ -79,4 +79,7 @@ class LM():
             else:
                 new_sen.append(self.generate(new_sen[-self._N+1:]))
         return Sentence(' '.join(new_sen), normalize=False)
+    
+    def get_top_freqs(self, count:int):
+        return self._ngrams.most_common(count)
 

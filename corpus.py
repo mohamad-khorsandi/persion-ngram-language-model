@@ -1,13 +1,17 @@
 from unittest import result
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 from hazm import sent_tokenize, word_tokenize
+from hazm import Normalizer
 
 class Corpus:
     def __init__(self, corp_file: str, gram_count: int) -> None:
+        assert gram_count <= 3 #send 0 for not adding any start or end symbol
+        
         self._sen_corp: list[str] = []
         self._word_corp: list[list[str]] = []
         self._gram_count: int = gram_count
         self._vocab:set[str] = set()
+        self.hazm = Normalizer()
 
         for comment in open(corp_file, encoding='utf-8').read().split('"'):
             for sen in sent_tokenize(comment):
@@ -16,8 +20,8 @@ class Corpus:
         self._sen_corp = self._sen_corp[1:]
         self._sen_corp = self._normalize()
         self._word_corp = self._word_tokenize()
-        self._word_corp = self._add_special_toks()
-
+        if (gram_count != 0):
+            self._word_corp = self._add_special_toks()
 
     def print(self, word:bool=True) -> None:
         if word:
@@ -34,7 +38,7 @@ class Corpus:
         new_c: list[str] = []
         
         for sen in self._sen_corp:
-            new_c.append(normalizer(sen))
+            new_c.append(self.hazm.remove_diacritics(normalizer(sen)))
 
         return new_c
     
